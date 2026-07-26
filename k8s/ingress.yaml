@@ -1,0 +1,65 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: student-attendance-ingress
+  namespace: student-attendance
+
+  annotations:
+    # Use AWS Load Balancer Controller
+    kubernetes.io/ingress.class: alb
+
+    # Create an Internet-facing ALB
+    alb.ingress.kubernetes.io/scheme: internet-facing
+
+    # Register Pod IPs directly
+    alb.ingress.kubernetes.io/target-type: ip
+
+    # Explicitly create an ALB
+    alb.ingress.kubernetes.io/load-balancer-type: external
+
+    # ALB Listener
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+
+    # Health Check
+    alb.ingress.kubernetes.io/healthcheck-path: /
+
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+
+    alb.ingress.kubernetes.io/success-codes: "200"
+
+    # Security Group created by Terraform
+    # Replace this with your Terraform output
+    alb.ingress.kubernetes.io/security-groups: "sg-0123456789abcdef0"
+
+    # Optional AWS Tags
+    alb.ingress.kubernetes.io/tags: |
+      Environment=dev,
+      Project=student-attendance
+
+spec:
+  ingressClassName: alb
+
+  rules:
+    - http:
+        paths:
+
+          # Frontend
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
+
+          # Backend API
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 8080
