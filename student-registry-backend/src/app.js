@@ -14,6 +14,10 @@ app.get("/", (req, res) => {
     res.send("Student Registry API is Running");
 });
 
+app.get("/health", (req, res) => {
+    res.status(200).send("OK");
+});
+
 app.use("/api/students", studentRoutes);
 
 module.exports = app;

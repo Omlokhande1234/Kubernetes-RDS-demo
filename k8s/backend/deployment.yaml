@@ -4,6 +4,7 @@ kind: Deployment
 metadata:
   name: backend
   namespace: student-attendance
+
   labels:
     app: backend
 
@@ -15,8 +16,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+      maxSurge: 0
+      maxUnavailable: 1
 
   selector:
     matchLabels:
@@ -31,45 +32,42 @@ spec:
       containers:
         - name: backend
 
-          image: <AWS_ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/student-attendance-backend:latest
-
+          image: 962415228964.dkr.ecr.ap-south-1.amazonaws.com/student-attendance-dev-application:backend-v1
           imagePullPolicy: Always
 
           ports:
-            - containerPort: 8080
+            - containerPort: 3000
 
           envFrom:
             - configMapRef:
                 name: attendance-config
-
             - secretRef:
                 name: attendance-secret
 
           resources:
             requests:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: "50m"
+              memory: "64Mi"
 
             limits:
-              cpu: "300m"
+              cpu: "200m"
               memory: "256Mi"
 
           readinessProbe:
             httpGet:
               path: /health
-              port: 8080
-
-            initialDelaySeconds: 15
+              port: 3000
+            initialDelaySeconds: 30
             periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
+            timeoutSeconds: 2
+            failureThreshold: 5
+            successThreshold: 1
 
           livenessProbe:
             httpGet:
               path: /health
-              port: 8080
-
-            initialDelaySeconds: 30
+              port: 3000
+            initialDelaySeconds: 60
             periodSeconds: 20
-            timeoutSeconds: 5
+            timeoutSeconds: 2
             failureThreshold: 3
